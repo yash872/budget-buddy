@@ -3,7 +3,11 @@ services:
     name: budget-buddy
     runtime: node
     plan: free
-    buildCommand: npm install && npm run build
+    # --include=dev is required because NODE_ENV=production (set below) makes
+    # npm skip devDependencies by default — but `next build` itself needs
+    # typescript and @tailwindcss/postcss, which live there (correctly, since
+    # they're not needed at runtime by `next start`).
+    buildCommand: npm install --include=dev && npm run build
     startCommand: npm run start
     envVars:
       - key: MONGODB_URI
