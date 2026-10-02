@@ -26,6 +26,19 @@ function pushToFront(list: string[], name: string): string[] {
   return [name, ...withoutDupes].slice(0, MAX_RECENTS);
 }
 
+/** Appends names not already present (case-insensitive), preserving order. */
+function mergeNames(existing: string[], incoming: string[]): string[] {
+  const seen = new Set(existing.map((n) => n.toLowerCase()));
+  const merged = [...existing];
+  for (const name of incoming) {
+    if (typeof name === "string" && name.trim() && !seen.has(name.toLowerCase())) {
+      seen.add(name.toLowerCase());
+      merged.push(name.trim());
+    }
+  }
+  return merged;
+}
+
 /**
  * Lightweight "who's using this" mechanic for a weekend hackathon demo —
  * no auth, just a name saved in localStorage that scopes API calls so
@@ -56,6 +69,28 @@ export function useProfile() {
     setProfileName(stored);
     setKnownProfiles(recents);
     setHydrated(true);
+
+    // Best-effort: pull the profiles that actually have data on this deployed
+    // instance (seeded demo profiles + anyone else who's used it) and merge
+    // them in, so a fresh browser still sees them in the switcher instead of a
+    // blank name-entry screen. Purely additive — hydration above does NOT wait
+    // on this, so the app stays fully usable if the fetch fails or is slow.
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch("/api/profiles");
+        if (!res.ok) return;
+        const data = (await res.json()) as { profiles?: unknown };
+        if (cancelled || !Array.isArray(data.profiles)) return;
+        const fromDb = data.profiles.filter((n): n is string => typeof n === "string");
+        setKnownProfiles((current) => mergeNames(current, fromDb));
+      } catch {
+        // Discovery is a nice-to-have; localStorage recents still work offline.
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   /** Switches to (or creates) a friend profile and remembers it for next time. */
