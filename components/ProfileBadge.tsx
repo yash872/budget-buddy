@@ -40,6 +40,9 @@ export default function ProfileBadge() {
     <div ref={containerRef} className="relative">
       <button
         onClick={() => setOpen((v) => !v)}
+        aria-label={`Switch friend — currently ${profileName}`}
+        aria-expanded={open}
+        aria-haspopup="menu"
         className="flex items-center gap-1.5 rounded-full bg-gradient-to-r from-emerald-100 to-teal-100 px-3 py-1.5 text-sm font-medium text-emerald-900 transition hover:from-emerald-200 hover:to-teal-200"
       >
         <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
