@@ -111,5 +111,9 @@ export default function ProfileGate({ children }: ProfileGateProps) {
     );
   }
 
-  return <>{children(profileName)}</>;
+  // Key on the profile name so switching friends gives the page a fresh
+  // subtree instead of reusing the previous friend's component instance —
+  // this resets per-profile local state (a generated check-in card, the
+  // "Just added" feed, loading flags) rather than leaving it stale.
+  return <div key={profileName}>{children(profileName)}</div>;
 }
