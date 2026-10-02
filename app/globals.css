@@ -1,8 +1,8 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #f8faf9;
+  --foreground: #0f172a;
 }
 
 @theme inline {
@@ -12,15 +12,48 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/*
+ * This app always renders a light UI (white/light cards, dark text) by
+ * design — it never had a dark theme implemented. Previously the OS-level
+ * `prefers-color-scheme: dark` media query flipped --foreground to a light
+ * color while cards stayed white, which made text in inputs/selects (and
+ * anywhere else relying on inherited color) unreadable on dark-mode systems.
+ * Explicitly fixing the color-scheme instead of auto-switching avoids that
+ * class of bug entirely.
+ */
+html {
+  color-scheme: light;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+}
+
+/*
+ * Belt-and-suspenders: every text input/select/textarea gets an explicit
+ * dark text color + white fill, regardless of what inherits down to it.
+ */
+input,
+select,
+textarea {
+  color: #0f172a;
+  background-color: #ffffff;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: #94a3b8;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
